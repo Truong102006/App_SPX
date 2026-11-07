@@ -7,3 +7,4 @@ class ParcelTrackingSampleData {
   static const String destination = 'Thu Duc City, Ho Chi Minh City';
   static const String estimatedDelivery = '04–05/11/2026';
 }
+

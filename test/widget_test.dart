@@ -11,3 +11,4 @@ void main() {
     expect(find.text('Resolution Update'), findsOneWidget);
   });
 }
+

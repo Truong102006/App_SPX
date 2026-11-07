@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_colors.dart';
+import '../constants/app_colors.dart';
 
 /// Custom geometric vector icons matching the 100% SPX Express design reference.
 class SpxCustomIcons {
@@ -491,3 +491,4 @@ class _CopyIconPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _CopyIconPainter oldDelegate) => oldDelegate.color != color;
 }
+

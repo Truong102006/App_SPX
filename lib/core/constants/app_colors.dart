@@ -39,3 +39,4 @@ class AppColors {
   static const Color timelineInactiveDot = Color(0xFF8C929C);
   static const Color navInactive = Color(0xFF70757F);
 }
+

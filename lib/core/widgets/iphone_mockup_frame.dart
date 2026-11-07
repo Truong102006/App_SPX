@@ -36,7 +36,7 @@ class IphoneMockupFrame extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.45),
+            color: Colors.black.withValues(alpha: 0.45),
             blurRadius: 30,
             offset: const Offset(0, 16),
           ),
@@ -189,7 +189,7 @@ class _IosStatusBar extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(3),
                         border: Border.all(
-                          color: Colors.black.withOpacity(0.45),
+                          color: Colors.black.withValues(alpha: 0.45),
                           width: 1,
                         ),
                       ),
@@ -205,7 +205,7 @@ class _IosStatusBar extends StatelessWidget {
                       width: 1.5,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.45),
+                        color: Colors.black.withValues(alpha: 0.45),
                         borderRadius: const BorderRadius.only(
                           topRight: Radius.circular(1),
                           bottomRight: Radius.circular(1),
@@ -227,7 +227,7 @@ class _IosStatusBar extends StatelessWidget {
       width: 2.7,
       height: height,
       decoration: BoxDecoration(
-        color: active ? Colors.black : Colors.black.withOpacity(0.28),
+        color: active ? Colors.black : Colors.black.withValues(alpha: 0.28),
         borderRadius: BorderRadius.circular(1),
       ),
     );
@@ -386,3 +386,4 @@ class _SpxBottomNavBar extends StatelessWidget {
     );
   }
 }
+
