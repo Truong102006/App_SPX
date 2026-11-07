@@ -1,0 +1,55 @@
+name: Build Flutter Windows Release
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Enable Windows Desktop Support
+        run: flutter config --enable-windows-desktop
+
+      - name: Generate missing Windows runner files (if needed)
+        run: |
+          if (!(Test-Path "windows/CMakeLists.txt")) {
+            flutter create --platforms=windows --project-name app_spx .
+          }
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Build Windows Release
+        run: flutter build windows --release
+
+      - name: Rename executable to App.exe (keep original as well for compatibility)
+        run: |
+          $releaseDir = "build/windows/x64/runner/Release"
+          if (Test-Path "$releaseDir/app_spx.exe") {
+            Copy-Item "$releaseDir/app_spx.exe" "$releaseDir/App.exe" -Force
+          }
+
+      - name: Upload Release Artifact (ZIP)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SPX-Express-Windows-Release
+          path: build/windows/x64/runner/Release/*
+          if-no-files-found: error
+          retention-days: 30
