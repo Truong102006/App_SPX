@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../parcel_tracking/presentation/screens/delivery_time_updates_screen.dart';
 import '../../../parcel_tracking/presentation/screens/parcel_delayed_screen.dart';
+import '../../../parcel_tracking/presentation/screens/reason_for_delay_screen.dart';
 import '../../../resolution/presentation/screens/resolution_update_screen.dart';
 import '../../../support/presentation/screens/confirm_support_request_screen.dart';
 import '../../../support/presentation/screens/delayed_parcel_support_screen.dart';
@@ -15,7 +17,7 @@ class ScreenShowcasePage extends StatefulWidget {
 }
 
 class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
-  // -1 means "Show All 5 Screens Side-by-Side", 0..4 means single screen focus
+  // -1 means "Show All 7 Screens Side-by-Side", 0..6 means single screen focus
   int _selectedIndex = -1;
 
   static const List<_ScreenItem> _screens = [
@@ -25,22 +27,32 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
       widget: ParcelDelayedScreen(),
     ),
     _ScreenItem(
-      title: '2. Delayed Support (04/06)',
+      title: '2. Reason for Delay (02/06)',
+      subtitle: 'Why is my parcel delayed?',
+      widget: ReasonForDelayScreen(),
+    ),
+    _ScreenItem(
+      title: '3. Delivery Timeframes (03/06)',
+      subtitle: 'Delivery time and status updates',
+      widget: DeliveryTimeUpdatesScreen(),
+    ),
+    _ScreenItem(
+      title: '4. Delayed Support (04/06)',
       subtitle: 'How can I help you?',
       widget: DelayedParcelSupportScreen(),
     ),
     _ScreenItem(
-      title: '3. Confirm Request Modal',
+      title: '5. Confirm Request Modal',
       subtitle: 'Submit Support Request?',
       widget: ConfirmSupportRequestScreen(),
     ),
     _ScreenItem(
-      title: '4. Track Request (05/06)',
+      title: '6. Track Request (05/06)',
       subtitle: 'Track Support Request',
       widget: TrackSupportRequestScreen(),
     ),
     _ScreenItem(
-      title: '5. Resolution Update (06/06)',
+      title: '7. Resolution Update (06/06)',
       subtitle: 'Left the sorting hub',
       widget: ResolutionUpdateScreen(),
     ),
@@ -85,7 +97,7 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
                   ),
                   const SizedBox(width: 24),
                   _buildFilterChip(
-                    label: 'All 5 Screens (100% Reference View)',
+                    label: 'All 7 Screens (01/06 → 06/06 + Modal)',
                     selected: _selectedIndex == -1,
                     onTap: () => setState(() => _selectedIndex = -1),
                   ),
@@ -197,4 +209,3 @@ class _ScreenItem {
     required this.widget,
   });
 }
-

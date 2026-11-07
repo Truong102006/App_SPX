@@ -76,6 +76,38 @@ class SpxCustomIcons {
       painter: _CopyIconPainter(color: color),
     );
   }
+
+  /// Scalloped Seal Checkmark Icon (used in Screen 02 "Verified" badge)
+  static Widget verifiedSeal({double size = 14, Color color = AppColors.primaryOrange}) {
+    return CustomPaint(
+      size: Size.square(size),
+      painter: _VerifiedSealPainter(color: color),
+    );
+  }
+
+  /// Sorting Hub Warehouse Icon (used in Screen 02 Sorting Hub card)
+  static Widget warehouseHub({double size = 24, Color color = AppColors.textPrimary}) {
+    return CustomPaint(
+      size: Size.square(size),
+      painter: _WarehouseHubPainter(color: color),
+    );
+  }
+
+  /// Calendar Outline Icon (used in Screen 03 Estimated Delivery Time card)
+  static Widget calendarIcon({double size = 20, Color color = AppColors.primaryOrange}) {
+    return CustomPaint(
+      size: Size.square(size),
+      painter: _CalendarIconPainter(color: color),
+    );
+  }
+
+  /// Speech Bubble Outline Icon (used in Screen 03 "Review parcel details" button)
+  static Widget speechBubble({double size = 18, Color color = AppColors.textPrimary}) {
+    return CustomPaint(
+      size: Size.square(size),
+      painter: _SpeechBubblePainter(color: color),
+    );
+  }
 }
 
 class _ParcelBoxPainter extends CustomPainter {
@@ -491,4 +523,167 @@ class _CopyIconPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _CopyIconPainter oldDelegate) => oldDelegate.color != color;
 }
+
+class _VerifiedSealPainter extends CustomPainter {
+  final Color color;
+  _VerifiedSealPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Outer circle/badge
+    canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.42, paint);
+
+    // Inner checkmark
+    final checkPath = Path()
+      ..moveTo(w * 0.33, h * 0.52)
+      ..lineTo(w * 0.45, h * 0.64)
+      ..lineTo(w * 0.68, h * 0.38);
+    canvas.drawPath(checkPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _VerifiedSealPainter oldDelegate) => oldDelegate.color != color;
+}
+
+class _WarehouseHubPainter extends CustomPainter {
+  final Color color;
+  _WarehouseHubPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.65
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Outer warehouse pitched roof & walls + base
+    final outerPath = Path()
+      ..moveTo(w * 0.14, h * 0.34)
+      ..lineTo(w * 0.50, h * 0.14)
+      ..lineTo(w * 0.86, h * 0.34)
+      ..lineTo(w * 0.86, h * 0.84)
+      ..lineTo(w * 0.14, h * 0.84)
+      ..close();
+    canvas.drawPath(outerPath, paint);
+
+    // Garage roller door frame
+    final doorRect = Path()
+      ..moveTo(w * 0.30, h * 0.84)
+      ..lineTo(w * 0.30, h * 0.44)
+      ..lineTo(w * 0.70, h * 0.44)
+      ..lineTo(w * 0.70, h * 0.84);
+    canvas.drawPath(doorRect, paint);
+
+    // Horizontal roller slats
+    canvas.drawLine(Offset(w * 0.30, h * 0.57), Offset(w * 0.70, h * 0.57), paint);
+    canvas.drawLine(Offset(w * 0.30, h * 0.70), Offset(w * 0.70, h * 0.70), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _WarehouseHubPainter oldDelegate) => oldDelegate.color != color;
+}
+
+class _CalendarIconPainter extends CustomPainter {
+  final Color color;
+  _CalendarIconPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.55
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Main calendar box
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(w * 0.12, h * 0.20, w * 0.76, h * 0.68),
+      const Radius.circular(3.0),
+    );
+    canvas.drawRRect(rrect, paint);
+
+    // Top rings
+    canvas.drawLine(Offset(w * 0.32, h * 0.11), Offset(w * 0.32, h * 0.25), paint);
+    canvas.drawLine(Offset(w * 0.68, h * 0.11), Offset(w * 0.68, h * 0.25), paint);
+
+    // Header divider line
+    canvas.drawLine(Offset(w * 0.12, h * 0.39), Offset(w * 0.88, h * 0.39), paint);
+
+    // Small grid dots inside calendar
+    final dotPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    for (final dx in [0.32, 0.50, 0.68]) {
+      for (final dy in [0.54, 0.70]) {
+        canvas.drawCircle(Offset(w * dx, h * dy), 1.15, dotPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CalendarIconPainter oldDelegate) => oldDelegate.color != color;
+}
+
+class _SpeechBubblePainter extends CustomPainter {
+  final Color color;
+  _SpeechBubblePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.75
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    final path = Path()
+      ..moveTo(w * 0.22, h * 0.74)
+      ..lineTo(w * 0.14, h * 0.86)
+      ..lineTo(w * 0.34, h * 0.81)
+      ..arcToPoint(
+        Offset(w * 0.86, h * 0.48),
+        radius: Radius.circular(w * 0.38),
+        clockwise: false,
+      )
+      ..arcToPoint(
+        Offset(w * 0.14, h * 0.48),
+        radius: Radius.circular(w * 0.38),
+        clockwise: false,
+      )
+      ..arcToPoint(
+        Offset(w * 0.22, h * 0.74),
+        radius: Radius.circular(w * 0.38),
+        clockwise: false,
+      );
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SpeechBubblePainter oldDelegate) => oldDelegate.color != color;
+}
+
 
