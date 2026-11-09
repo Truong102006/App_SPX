@@ -52,3 +52,26 @@ lib/
         └── presentation/screens/
             └── screen_showcase_page.dart               # Màn hình tổng hợp xem cả 7 màn hình hoặc từng màn hình
 ```
+
+## Chuyển ngôn ngữ
+
+Web demo công khai: https://spx-express-demo.pages.dev — mở trực tiếp bằng trình duyệt, không cần chạy mã nguồn. Hướng dẫn cập nhật: [docs/deployment.md](docs/deployment.md).
+
+
+Bấm biểu tượng cài đặt (hình lục giác) ở góc trên bên phải màn hình tài khoản, sau đó chọn **English** hoặc **Tiếng Việt**. Giao diện cập nhật ngay và giữ lựa chọn khi chuyển màn hình trong phiên sử dụng. Mở lại ứng dụng sẽ dùng tiếng Anh mặc định. Mã vận đơn, tên sản phẩm và dữ liệu địa chỉ được giữ nguyên.
+
+## Luồng giao hỏa tốc và voucher demo
+
+Chọn **Yêu cầu hỗ trợ giao gấp** để xem xác nhận có nhãn giao hỏa tốc. Sau khi gửi, màn hình theo dõi hiển thị quà xin lỗi: chọn voucher Shopee giảm 10% không giới hạn giá trị đơn/số tiền giảm, hoặc SPX giảm phí vận chuyển tối đa 30.000đ cho một đơn. Voucher có hiệu lực 15 ngày từ lúc nhận, được lưu trong **Mã ưu đãi** cùng các voucher mẫu. Dữ liệu chỉ lưu trong phiên chạy, không có giá trị sử dụng thực tế. Luồng gửi yêu cầu thông thường vẫn hoạt động riêng.
+
+## Bản Windows portable
+
+Sau khi build, mở `Release_App/App.exe`. Khi gửi ứng dụng sang máy khác, gửi file `SPX-Express-Windows-Release.zip`, giải nén toàn bộ và giữ `App.exe`, `flutter_windows.dll` cùng thư mục `data` cạnh nhau.
+
+Build lại trên Windows:
+
+```powershell
+flutter pub get
+flutter test
+flutter build windows --release
+```
