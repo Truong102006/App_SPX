@@ -26,6 +26,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+.wrangler/
 
 # Symbolication related
 app.*.symbols
@@ -38,3 +39,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+
+# Packaged Windows releases
+/Release_App/
+/SPX-Express-Windows-Release.zip
