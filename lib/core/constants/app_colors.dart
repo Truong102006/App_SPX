@@ -20,6 +20,11 @@ class AppColors {
   static const Color closedBadgeBg = Color(0xFFF9EFE8);
   static const Color closedBadgeText = Color(0xFF9C3511);
 
+  // Red Highlight for Delay Reason
+  static const Color delayReasonRed = Color(0xFFD92D20);
+  static const Color delayReasonRedBg = Color(0xFFFEF3F2);
+  static const Color delayReasonRedBorder = Color(0xFFFECDCA);
+
   // Green Success Tints
   static const Color greenBadgeBg = Color(0xFFEAF4EC);
   static const Color greenCardBg = Color(0xFFEBF4ED);

@@ -1,22 +1,38 @@
+import '../../../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/iphone_mockup_frame.dart';
 import '../../../../core/widgets/spx_common_widgets.dart';
 import '../../../../core/widgets/spx_custom_icons.dart';
+import '../../../../data/models/parcel_sample_data.dart';
 
 /// Screen 02/06: "Why is my parcel delayed?" (Reason For The Delay)
-/// Exact 100% pixel match to uploaded image (`media_1794038934673_732324fe.png`)
+/// Highlights the delay reason in red and supports dynamic selected order data.
 class ReasonForDelayScreen extends StatelessWidget {
-  const ReasonForDelayScreen({super.key});
+  final ParcelOrderData? selectedOrder;
+  final VoidCallback? onViewUpdateTime;
+  final VoidCallback? onBackTap;
+  final ValueChanged<SpxBottomTab>? onTabSelected;
+
+  const ReasonForDelayScreen({
+    super.key,
+    this.selectedOrder,
+    this.onViewUpdateTime,
+    this.onBackTap,
+    this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final order = selectedOrder ?? ParcelTrackingSampleData.sampleOrders.first;
+
     return IphoneMockupFrame(
       timeText: '14:30',
       activeTab: SpxBottomTab.parcels,
+      onBackTap: onBackTap,
+      onTabSelected: onTabSelected,
       body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,7 +42,7 @@ class ReasonForDelayScreen extends StatelessWidget {
               stepText: '02 / 06',
             ),
             const SizedBox(height: 6),
-            const Text(
+            const LocalizedText(
               'Why is my parcel delayed?',
               style: AppTextStyles.pageTitle,
             ),
@@ -48,23 +64,23 @@ class ReasonForDelayScreen extends StatelessWidget {
                 children: [
                   SpxCustomIcons.parcelBox(size: 21),
                   const SizedBox(width: 11),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'SPXVN-DEMO-261102-0042',
-                          style: TextStyle(
+                        LocalizedText(
+                          order.trackingId,
+                          style: const TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: 13.0,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 2),
-                        Text(
-                          'To Thu Duc City, Ho Chi Minh City',
-                          style: TextStyle(
+                        const SizedBox(height: 2),
+                        LocalizedText(
+                          'To ${order.destination}',
+                          style: const TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: 11.4,
                             fontWeight: FontWeight.w400,
@@ -74,7 +90,7 @@ class ReasonForDelayScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Text(
+                  const LocalizedText(
                     'SAMPLE',
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
@@ -102,7 +118,8 @@ class ReasonForDelayScreen extends StatelessWidget {
                 children: [
                   // Verified Pill Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: AppColors.greenBadgeBg,
                       borderRadius: BorderRadius.circular(18),
@@ -115,7 +132,7 @@ class ReasonForDelayScreen extends StatelessWidget {
                           color: AppColors.primaryOrange,
                         ),
                         const SizedBox(width: 5),
-                        const Text(
+                        const LocalizedText(
                           'Verified',
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
@@ -146,27 +163,27 @@ class ReasonForDelayScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Sorting Hub – Ho Chi Minh City',
-                              style: TextStyle(
+                            LocalizedText(
+                              order.currentHub,
+                              style: const TextStyle(
                                 fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
-                            SizedBox(height: 3),
-                            Text(
-                              'Processing stage: sorting',
-                              style: TextStyle(
+                            const SizedBox(height: 3),
+                            LocalizedText(
+                              'Processing stage: ${order.processingStage}',
+                              style: const TextStyle(
                                 fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 12.2,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFF6B717C),
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.delayReasonRed,
                               ),
                             ),
                           ],
@@ -174,22 +191,59 @@ class ReasonForDelayScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // Main Backlog Explanation
-                  const Text(
-                    'A hub backlog is delaying sorting.\n'
-                    'Your parcel cannot move to the next\n'
-                    'facility until sorting is complete.',
-                    style: TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 15.0,
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                      color: AppColors.textPrimary,
+                  // Main Backlog Explanation Highlighted in RED
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.delayReasonRedBg,
+                      borderRadius: BorderRadius.circular(11),
+                      border: Border.all(
+                        color: AppColors.delayReasonRedBorder,
+                        width: 1.1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 16,
+                              color: AppColors.delayReasonRed,
+                            ),
+                            SizedBox(width: 5),
+                            Flexible(
+                                child: LocalizedText(
+                              'DELAY REASON (HIGHLIGHTED)',
+                              style: TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
+                                fontSize: 10.2,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
+                                color: AppColors.delayReasonRed,
+                              ),
+                            )),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        LocalizedText(
+                          order.delayDetailedReason,
+                          style: const TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w700,
+                            height: 1.38,
+                            color: AppColors.delayReasonRed,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 14),
 
                   // Thin Divider
                   Container(
@@ -197,12 +251,12 @@ class ReasonForDelayScreen extends StatelessWidget {
                     height: 1,
                     color: const Color(0xFFECEEF1),
                   ),
-                  const SizedBox(height: 13),
+                  const SizedBox(height: 12),
 
                   // Verified Timestamp & Disclaimer
-                  const Text(
-                    'Verified: 14:20, 02/11/2026 ICT',
-                    style: TextStyle(
+                  LocalizedText(
+                    'Verified: ${order.updatedAt}',
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: 11.4,
                       fontWeight: FontWeight.w700,
@@ -210,7 +264,7 @@ class ReasonForDelayScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  const LocalizedText(
                     'Sample verification for this project;\n'
                     'not a direct confirmation from SPX.',
                     style: TextStyle(
@@ -240,7 +294,7 @@ class ReasonForDelayScreen extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 Expanded(
-                  child: Text(
+                  child: LocalizedText(
                     'No need to resubmit your request yet.\n'
                     'Check the next update for the latest information.',
                     style: TextStyle(
@@ -257,15 +311,16 @@ class ReasonForDelayScreen extends StatelessWidget {
             const SizedBox(height: 14),
 
             // Primary Action Button: View update time ->
-            const SpxPrimaryButton(
+            SpxPrimaryButton(
               label: 'View update time',
               showArrow: true,
+              onTap: onViewUpdateTime,
             ),
             const SizedBox(height: 12),
 
             // Centered Footer Note
             const Center(
-              child: Text(
+              child: LocalizedText(
                 'Updates are provided even if the status is unchanged.',
                 textAlign: TextAlign.center,
                 style: TextStyle(

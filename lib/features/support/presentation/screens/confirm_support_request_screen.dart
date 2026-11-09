@@ -1,41 +1,48 @@
+import '../../../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/iphone_mockup_frame.dart';
 import '../../../../core/widgets/spx_common_widgets.dart';
+import '../../../../data/models/parcel_sample_data.dart';
 
 /// Screen Modal: "Submit Support Request?" (Confirm Request - Sample Data)
-/// Exact 100% pixel match to uploaded image 2 (`media_1794038735456_a0541606.png`)
 class ConfirmSupportRequestScreen extends StatelessWidget {
-  const ConfirmSupportRequestScreen({super.key});
+  final bool isExpress;
+  final ParcelOrderData? selectedOrder;
+  final VoidCallback? onConfirmAndSubmit;
+  final VoidCallback? onGoBackWithoutSubmitting;
+
+  const ConfirmSupportRequestScreen({
+    super.key,
+    this.isExpress = false,
+    this.selectedOrder,
+    this.onConfirmAndSubmit,
+    this.onGoBackWithoutSubmitting,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final order = selectedOrder ?? ParcelTrackingSampleData.sampleOrders.first;
+
     return IphoneMockupFrame(
       timeText: '14:35',
-      showStandardShell: false,
+      onBackTap: onGoBackWithoutSubmitting,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: AppColors.modalOverlayBlack,
+        color: Colors.white,
         alignment: Alignment.topCenter,
         child: Container(
           width: double.infinity,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(42),
-              topRight: Radius.circular(42),
-              bottomLeft: Radius.circular(22),
-              bottomRight: Radius.circular(22),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 38, 20, 22),
+          height: double.infinity,
+          color: Colors.white,
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              const LocalizedText(
                 'CONFIRM REQUEST - SAMPLE DATA',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
@@ -46,7 +53,7 @@ class ConfirmSupportRequestScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 11),
-              const Text(
+              const LocalizedText(
                 'Submit Support Request?',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
@@ -57,7 +64,7 @@ class ConfirmSupportRequestScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
+              const LocalizedText(
                 'Parcel details and tracking history will be included.\n'
                 'You can go back if you are not ready to submit.',
                 style: TextStyle(
@@ -78,32 +85,32 @@ class ConfirmSupportRequestScreen extends StatelessWidget {
                   color: AppColors.innerGrayCardBg,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'SPXVN-DEMO-261102-0042',
-                      style: TextStyle(
+                    LocalizedText(
+                      order.trackingId,
+                      style: const TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 5),
-                    Text(
-                      'Sorting Hub – Ho Chi Minh City',
-                      style: TextStyle(
+                    const SizedBox(height: 5),
+                    LocalizedText(
+                      order.currentHub,
+                      style: const TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: 12.6,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Destination: Thu Duc City, Ho Chi Minh City',
-                      style: TextStyle(
+                    const SizedBox(height: 4),
+                    LocalizedText(
+                      'Destination: ${order.destination}',
+                      style: const TextStyle(
                         fontFamily: AppTextStyles.fontFamily,
                         fontSize: 12.2,
                         fontWeight: FontWeight.w400,
@@ -116,35 +123,34 @@ class ConfirmSupportRequestScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Confirm and submit button
-              const SpxPrimaryButton(
+              if (isExpress) ...[
+                const LocalizedText('Delivery service: SPX Instant (Express)',
+                    style: TextStyle(
+                        color: AppColors.primaryOrange,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+              ],
+              SpxPrimaryButton(
                 label: 'Confirm and submit',
                 showArrow: true,
+                onTap: onConfirmAndSubmit,
               ),
               const SizedBox(height: 10),
 
               // Go back without submitting button
-              const SpxSecondaryButton(
+              SpxSecondaryButton(
                 label: 'Go back without submitting',
+                onTap: onGoBackWithoutSubmitting,
               ),
               const SizedBox(height: 15),
 
-              const Text(
+              const LocalizedText(
                 'Once submitted, track it under Support Request.',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: 11.4,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF6A707B),
-                ),
-              ),
-              const SizedBox(height: 9),
-              const Text(
-                'Student project · Sample data · Unofficial',
-                style: TextStyle(
-                  fontFamily: AppTextStyles.fontFamily,
-                  fontSize: 10.4,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xFF7B818C),
                 ),
               ),
             ],
@@ -154,4 +160,3 @@ class ConfirmSupportRequestScreen extends StatelessWidget {
     );
   }
 }
-

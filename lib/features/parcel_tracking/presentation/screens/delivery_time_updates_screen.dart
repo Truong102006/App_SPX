@@ -1,22 +1,40 @@
+import '../../../../core/widgets/spx_interactive.dart';
+import '../../../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/iphone_mockup_frame.dart';
 import '../../../../core/widgets/spx_common_widgets.dart';
 import '../../../../core/widgets/spx_custom_icons.dart';
+import '../../../../data/models/parcel_sample_data.dart';
 
 /// Screen 03/06: "Delivery time and status updates" (Two Different Timeframes)
-/// Exact 100% pixel match to uploaded image (`media_1794038941280_edac19df.png`)
 class DeliveryTimeUpdatesScreen extends StatelessWidget {
-  const DeliveryTimeUpdatesScreen({super.key});
+  final ParcelOrderData? selectedOrder;
+  final VoidCallback? onDelayedParcelSupport;
+  final VoidCallback? onReviewParcelDetails;
+  final VoidCallback? onBackTap;
+  final ValueChanged<SpxBottomTab>? onTabSelected;
+
+  const DeliveryTimeUpdatesScreen({
+    super.key,
+    this.selectedOrder,
+    this.onDelayedParcelSupport,
+    this.onReviewParcelDetails,
+    this.onBackTap,
+    this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final order = selectedOrder ?? ParcelTrackingSampleData.sampleOrders.first;
+
     return IphoneMockupFrame(
       timeText: '14:30',
       activeTab: SpxBottomTab.parcels,
+      onBackTap: onBackTap,
+      onTabSelected: onTabSelected,
       body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,14 +44,14 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
               stepText: '03 / 06',
             ),
             const SizedBox(height: 6),
-            const Text(
+            const LocalizedText(
               'Delivery time and\nstatus updates',
               style: AppTextStyles.pageTitle,
             ),
             const SizedBox(height: 7),
-            const Text(
-              'SPXVN-DEMO-261102-0042',
-              style: TextStyle(
+            LocalizedText(
+              order.trackingId,
+              style: const TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: 12.8,
                 fontWeight: FontWeight.w400,
@@ -57,7 +75,7 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  const LocalizedText(
                     'Estimated Delivery Time',
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
@@ -71,16 +89,17 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
-                        '04–05/11/2026',
-                        style: TextStyle(
+                      Flexible(
+                          child: LocalizedText(
+                        order.estimatedDelivery,
+                        style: const TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
                           fontSize: 21.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.4,
                           color: AppColors.textPrimary,
                         ),
-                      ),
+                      )),
                       SpxCustomIcons.calendarIcon(
                         size: 20,
                         color: AppColors.primaryOrange,
@@ -88,7 +107,7 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  const LocalizedText(
                     'When your parcel is expected to arrive.\n'
                     'This is an estimate and may change.',
                     style: TextStyle(
@@ -118,7 +137,8 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text(
+                      Flexible(
+                          child: LocalizedText(
                         'Next Status Update',
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
@@ -126,7 +146,7 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),
-                      ),
+                      )),
                       Icon(
                         Icons.access_time_rounded,
                         size: 19,
@@ -135,9 +155,9 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Before 08:30\non 03/11/2026',
-                    style: TextStyle(
+                  LocalizedText(
+                    order.nextUpdate,
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: 21.5,
                       fontWeight: FontWeight.w700,
@@ -147,7 +167,7 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  const LocalizedText(
                     'When SPX expects to share a status update.\n'
                     'This is not the delivery time.',
                     style: TextStyle(
@@ -164,38 +184,43 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
             const SizedBox(height: 13),
 
             // Primary Button: Delayed Parcel Support ->
-            const SpxPrimaryButton(
+            SpxPrimaryButton(
               label: 'Delayed Parcel Support',
               showArrow: true,
+              onTap: onDelayedParcelSupport,
             ),
             const SizedBox(height: 10),
 
             // Secondary Button with trailing speech bubble icon: Review parcel details
-            Container(
-              width: double.infinity,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(11),
-                border: Border.all(
-                  color: AppColors.borderLight,
-                  width: 1,
+            SpxInteractive(
+              onTap: onReviewParcelDetails,
+              child: Container(
+                width: double.infinity,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(
+                    color: AppColors.borderLight,
+                    width: 1,
+                  ),
                 ),
-              ),
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Review parcel details',
-                    style: AppTextStyles.secondaryButton,
-                  ),
-                  const SizedBox(width: 8),
-                  SpxCustomIcons.speechBubble(
-                    size: 16.5,
-                    color: AppColors.textPrimary,
-                  ),
-                ],
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Flexible(
+                        child: LocalizedText(
+                      'Review parcel details',
+                      style: AppTextStyles.secondaryButton,
+                    )),
+                    const SizedBox(width: 8),
+                    SpxCustomIcons.speechBubble(
+                      size: 16.5,
+                      color: AppColors.textPrimary,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -209,7 +234,8 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                   color: Color(0xFF5D636F),
                 ),
                 SizedBox(width: 6),
-                Text(
+                Flexible(
+                    child: LocalizedText(
                   'All times use Vietnam time · ICT (UTC+7).',
                   style: TextStyle(
                     fontFamily: AppTextStyles.fontFamily,
@@ -217,7 +243,7 @@ class DeliveryTimeUpdatesScreen extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF6B717C),
                   ),
-                ),
+                )),
               ],
             ),
           ],

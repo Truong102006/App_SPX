@@ -1,23 +1,99 @@
+import '../../../../core/widgets/spx_interactive.dart';
+import '../../../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/iphone_mockup_frame.dart';
 import '../../../../core/widgets/spx_common_widgets.dart';
 import '../../../../core/widgets/spx_custom_icons.dart';
+import '../../../../data/models/parcel_sample_data.dart';
 
 /// Screen 01/06: "Your parcel may be delayed" (Parcel Tracking)
-/// Exact 100% pixel match to uploaded image 5 (`media_1794038755892_525ee283.png`)
-class ParcelDelayedScreen extends StatelessWidget {
-  const ParcelDelayedScreen({super.key});
+/// Includes Tracking ID lookup bar + quick filter chips for existing sample orders,
+/// red-highlighted delay reason, and interactive navigation.
+class ParcelDelayedScreen extends StatefulWidget {
+  final ParcelOrderData? selectedOrder;
+  final ValueChanged<ParcelOrderData>? onOrderChanged;
+  final VoidCallback? onViewDetails;
+  final VoidCallback? onBackTap;
+  final ValueChanged<SpxBottomTab>? onTabSelected;
+
+  const ParcelDelayedScreen({
+    super.key,
+    this.selectedOrder,
+    this.onOrderChanged,
+    this.onViewDetails,
+    this.onBackTap,
+    this.onTabSelected,
+  });
+
+  @override
+  State<ParcelDelayedScreen> createState() => _ParcelDelayedScreenState();
+}
+
+class _ParcelDelayedScreenState extends State<ParcelDelayedScreen> {
+  late ParcelOrderData _currentOrder;
+  late TextEditingController _searchController;
+  bool _showFilterDropdown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentOrder =
+        widget.selectedOrder ?? ParcelTrackingSampleData.sampleOrders.first;
+    _searchController = TextEditingController(text: _currentOrder.trackingId);
+  }
+
+  @override
+  void didUpdateWidget(covariant ParcelDelayedScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedOrder != null &&
+        widget.selectedOrder!.trackingId != _currentOrder.trackingId) {
+      _currentOrder = widget.selectedOrder!;
+      _searchController.text = _currentOrder.trackingId;
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _selectOrder(ParcelOrderData order) {
+    setState(() {
+      _currentOrder = order;
+      _searchController.text = order.trackingId;
+      _showFilterDropdown = false;
+    });
+    widget.onOrderChanged?.call(order);
+  }
+
+  void _handleSearchSubmitted(String query) {
+    final trimmed = query.trim().toUpperCase();
+    if (trimmed.isEmpty) return;
+
+    final matches = ParcelTrackingSampleData.sampleOrders.where(
+      (o) =>
+          o.trackingId.toUpperCase().contains(trimmed) ||
+          o.itemName.toUpperCase().contains(trimmed),
+    );
+    if (matches.isNotEmpty) {
+      _selectOrder(matches.first);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final allOrders = ParcelTrackingSampleData.sampleOrders;
+
     return IphoneMockupFrame(
       timeText: '14:30',
       activeTab: SpxBottomTab.parcels,
+      onBackTap: widget.onBackTap,
+      onTabSelected: widget.onTabSelected,
       body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -25,34 +101,57 @@ class ParcelDelayedScreen extends StatelessWidget {
               title: 'PARCEL TRACKING',
               stepText: '01 / 06',
             ),
-            const SizedBox(height: 6),
-            const Text(
+            const SizedBox(height: 5),
+            const LocalizedText(
               'Your parcel may be delayed',
               style: AppTextStyles.pageTitle,
             ),
-            const SizedBox(height: 7),
-            // Tracking ID Row with Copy icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'SPXVN-DEMO-261102-0042',
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF5A606A),
-                  ),
-                ),
-                SpxCustomIcons.copyIcon(size: 16),
-              ],
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-            // Peach Delay Alert Box
+            // Search & Filter Tracking ID Box
+            _buildTrackingSearchAndFilterBox(allOrders),
+            const SizedBox(height: 10),
+
+            // Tracking ID Row with Copy icon
+            SpxInteractive(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: LocalizedText(
+                        'Copied tracking ID: ${_currentOrder.trackingId}'),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: LocalizedText(
+                      '${_currentOrder.trackingId} · ${_currentOrder.itemName}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: 12.6,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF5A606A),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SpxCustomIcons.copyIcon(size: 16),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Peach Delay Alert Box with RED highlighted delay reason
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 15),
+              padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
               decoration: BoxDecoration(
                 color: AppColors.peachAlertBg,
                 borderRadius: BorderRadius.circular(14),
@@ -75,29 +174,60 @@ class ParcelDelayedScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const LocalizedText(
                           'Your parcel may arrive later than\nexpected.',
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
-                            fontSize: 14.2,
+                            fontSize: 14.0,
                             fontWeight: FontWeight.w700,
-                            height: 1.3,
+                            height: 1.28,
                             color: AppColors.textAlertBrown,
                           ),
                         ),
-                        SizedBox(height: 6),
-                        Text(
-                          'Verified (example):\nsorting backlog.',
-                          style: TextStyle(
-                            fontFamily: AppTextStyles.fontFamily,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                            height: 1.35,
-                            color: AppColors.textAlertBody,
+                        const SizedBox(height: 7),
+                        // Red Highlighted Delay Reason Pill/Box
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.delayReasonRedBg,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: AppColors.delayReasonRedBorder,
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 1.5),
+                                child: Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 14,
+                                  color: AppColors.delayReasonRed,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: LocalizedText(
+                                  'Verified reason: ${_currentOrder.delayShortReason}',
+                                  style: const TextStyle(
+                                    fontFamily: AppTextStyles.fontFamily,
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.3,
+                                    color: AppColors.delayReasonRed,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -106,12 +236,12 @@ class ParcelDelayedScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 11),
 
             // Last Recorded Location Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
+              padding: const EdgeInsets.fromLTRB(15, 13, 15, 14),
               decoration: BoxDecoration(
                 color: AppColors.cardWhite,
                 borderRadius: BorderRadius.circular(14),
@@ -127,7 +257,7 @@ class ParcelDelayedScreen extends StatelessWidget {
                         color: AppColors.primaryOrange,
                       ),
                       SizedBox(width: 5),
-                      Text(
+                      LocalizedText(
                         'LAST RECORDED LOCATION',
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
@@ -139,32 +269,32 @@ class ParcelDelayedScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Sorting Hub – Ho Chi Minh City',
-                    style: TextStyle(
+                  const SizedBox(height: 7),
+                  LocalizedText(
+                    _currentOrder.currentHub,
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 15.2,
+                      fontSize: 15.0,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Awaiting sorting',
-                    style: TextStyle(
+                  const SizedBox(height: 3),
+                  LocalizedText(
+                    _currentOrder.processingStage,
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 12.8,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF6B717C),
+                      fontSize: 12.6,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.delayReasonRed,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  const Text(
-                    'Updated: 14:20, 02/11/2026 ICT',
-                    style: TextStyle(
+                  LocalizedText(
+                    'Updated: ${_currentOrder.updatedAt}',
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 12.5,
+                      fontSize: 12.3,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF6B717C),
                     ),
@@ -172,19 +302,20 @@ class ParcelDelayedScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 11),
 
             // View parcel details button
-            const SpxPrimaryButton(
+            SpxPrimaryButton(
               label: 'View parcel details',
               showArrow: true,
+              onTap: widget.onViewDetails,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 11),
 
             // Delivery Progress Stepper Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(15, 14, 15, 15),
+              padding: const EdgeInsets.fromLTRB(15, 13, 15, 14),
               decoration: BoxDecoration(
                 color: AppColors.cardWhite,
                 borderRadius: BorderRadius.circular(14),
@@ -192,35 +323,281 @@ class ParcelDelayedScreen extends StatelessWidget {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     'Delivery progress',
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
-                      fontSize: 14.8,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  SizedBox(height: 14),
+                  SizedBox(height: 12),
                   _DeliveryProgressStepper(),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
             // Footer timestamps
-            const Text(
-              'Next Status Update: before 08:30, 03/11/2026 ICT.\nDelay alert: 14:30, 02/11/2026 · ICT (UTC+7)',
-              style: TextStyle(
+            LocalizedText(
+              'Next Status Update: ${_currentOrder.nextUpdate.replaceAll('\n', ' ')} ICT.\n'
+              'Delay alert: ${_currentOrder.delayAlertTime}',
+              style: const TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
-                fontSize: 11.4,
+                fontSize: 11.2,
                 fontWeight: FontWeight.w400,
-                height: 1.45,
+                height: 1.42,
                 color: Color(0xFF6A707B),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTrackingSearchAndFilterBox(List<ParcelOrderData> allOrders) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: AppColors.borderLight,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Full-width tracking input, with actions on a separate row.
+          Row(
+            children: [
+              const Icon(
+                Icons.search_rounded,
+                size: 18,
+                color: AppColors.primaryOrange,
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: SizedBox(
+                  height: 30,
+                  child: TextField(
+                    controller: _searchController,
+                    onSubmitted: _handleSearchSubmitted,
+                    style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 12.3,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: AppLanguageScope.translate(
+                          context, 'Enter tracking ID (e.g., 0042, 0189)...'),
+                      hintStyle: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF8C929C),
+                      ),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 6),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SpxInteractive(
+                onTap: () => _handleSearchSubmitted(_searchController.text),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryOrange,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const LocalizedText(
+                    'Search',
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              SpxInteractive(
+                onTap: () =>
+                    setState(() => _showFilterDropdown = !_showFilterDropdown),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _showFilterDropdown
+                        ? AppColors.peachAlertBg
+                        : const Color(0xFFF2F3F5),
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(
+                      color: _showFilterDropdown
+                          ? AppColors.primaryOrange
+                          : const Color(0xFFE0E3E8),
+                      width: 0.9,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.filter_list_rounded,
+                        size: 14,
+                        color: _showFilterDropdown
+                            ? AppColors.primaryOrange
+                            : AppColors.textPrimary,
+                      ),
+                      const SizedBox(width: 3),
+                      LocalizedText(
+                        'Orders',
+                        style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: 10.8,
+                          fontWeight: FontWeight.w600,
+                          color: _showFilterDropdown
+                              ? AppColors.primaryOrange
+                              : AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+          // Horizontal Quick Filter Chips for Sample Orders
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: allOrders.map((order) {
+                final isSelected = order.trackingId == _currentOrder.trackingId;
+                final shortCode = order.trackingId.split('-').last;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: SpxInteractive(
+                    onTap: () => _selectOrder(order),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primaryOrange
+                            : const Color(0xFFF4F5F7),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primaryOrange
+                              : const Color(0xFFE2E4E9),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: LocalizedText(
+                        '#$shortCode',
+                        style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: 10.8,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF4E545F),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          // Expanded Dropdown List if user clicks "Mã đơn" Filter button
+          if (_showFilterDropdown) ...[
+            const SizedBox(height: 8),
+            const Divider(height: 1, color: Color(0xFFECEEF1)),
+            const SizedBox(height: 6),
+            ...allOrders.map((order) {
+              final isSelected = order.trackingId == _currentOrder.trackingId;
+              return SpxInteractive(
+                onTap: () => _selectOrder(order),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                  margin: const EdgeInsets.only(bottom: 3),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.peachAlertBg
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSelected
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_off_rounded,
+                        size: 15,
+                        color: isSelected
+                            ? AppColors.primaryOrange
+                            : const Color(0xFF8C929C),
+                      ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            LocalizedText(
+                              order.trackingId,
+                              style: TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: isSelected
+                                    ? AppColors.primaryOrange
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                            LocalizedText(
+                              '${order.itemName} · ${order.currentHub}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
+                                fontSize: 10.5,
+                                color: Color(0xFF6B717C),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ],
       ),
     );
   }
@@ -273,7 +650,8 @@ class _DeliveryProgressStepper extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: const [
-            Text(
+            Flexible(
+                child: LocalizedText(
               'Picked up',
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
@@ -281,10 +659,11 @@ class _DeliveryProgressStepper extends StatelessWidget {
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF6E747F),
               ),
-            ),
-            Padding(
+            )),
+            Flexible(
+                child: Padding(
               padding: EdgeInsets.only(right: 6),
-              child: Text(
+              child: LocalizedText(
                 'Sorting',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
@@ -293,10 +672,11 @@ class _DeliveryProgressStepper extends StatelessWidget {
                   color: AppColors.primaryOrange,
                 ),
               ),
-            ),
-            Padding(
+            )),
+            Flexible(
+                child: Padding(
               padding: EdgeInsets.only(right: 4),
-              child: Text(
+              child: LocalizedText(
                 'In transit',
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
@@ -305,8 +685,9 @@ class _DeliveryProgressStepper extends StatelessWidget {
                   color: Color(0xFF6E747F),
                 ),
               ),
-            ),
-            Text(
+            )),
+            Flexible(
+                child: LocalizedText(
               'Delivered',
               style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
@@ -314,7 +695,7 @@ class _DeliveryProgressStepper extends StatelessWidget {
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF6E747F),
               ),
-            ),
+            )),
           ],
         ),
       ],
@@ -378,4 +759,3 @@ class _DeliveryProgressStepper extends StatelessWidget {
     );
   }
 }
-

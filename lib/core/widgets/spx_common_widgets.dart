@@ -1,3 +1,5 @@
+import 'spx_interactive.dart';
+import '../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
@@ -17,7 +19,7 @@ class SpxPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return SpxInteractive(
       onTap: onTap,
       child: Container(
         width: double.infinity,
@@ -30,10 +32,11 @@ class SpxPrimaryButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            Flexible(
+                child: LocalizedText(
               label,
               style: AppTextStyles.primaryButton,
-            ),
+            )),
             if (showArrow) ...[
               const SizedBox(width: 6),
               const Icon(
@@ -62,7 +65,7 @@ class SpxSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return SpxInteractive(
       onTap: onTap,
       child: Container(
         width: double.infinity,
@@ -76,7 +79,7 @@ class SpxSecondaryButton extends StatelessWidget {
           ),
         ),
         alignment: Alignment.center,
-        child: Text(
+        child: LocalizedText(
           label,
           style: AppTextStyles.secondaryButton,
         ),
@@ -101,11 +104,12 @@ class SpxSectionEyebrow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
+        Flexible(
+            child: LocalizedText(
           title,
           style: AppTextStyles.sectionEyebrow,
-        ),
-        Text(
+        )),
+        LocalizedText(
           stepText,
           style: AppTextStyles.stepCounter,
         ),
@@ -113,4 +117,3 @@ class SpxSectionEyebrow extends StatelessWidget {
     );
   }
 }
-

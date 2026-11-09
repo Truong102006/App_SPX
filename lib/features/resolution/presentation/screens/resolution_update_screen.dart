@@ -1,22 +1,39 @@
+import '../../../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/iphone_mockup_frame.dart';
 import '../../../../core/widgets/spx_common_widgets.dart';
 import '../../../../core/widgets/spx_custom_icons.dart';
+import '../../../../data/models/parcel_sample_data.dart';
 
 /// Screen 06/06: "Resolution Update" (Resolution Update - 03/11/2026)
-/// Exact 100% pixel match to uploaded image 4 (`media_1794038748554_be0b33df.png`)
 class ResolutionUpdateScreen extends StatelessWidget {
-  const ResolutionUpdateScreen({super.key});
+  final ParcelOrderData? selectedOrder;
+  final VoidCallback? onBackToParcelTracking;
+  final VoidCallback? onContactSupportAgain;
+  final VoidCallback? onBackTap;
+  final ValueChanged<SpxBottomTab>? onTabSelected;
+
+  const ResolutionUpdateScreen({
+    super.key,
+    this.selectedOrder,
+    this.onBackToParcelTracking,
+    this.onContactSupportAgain,
+    this.onBackTap,
+    this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final order = selectedOrder ?? ParcelTrackingSampleData.sampleOrders.first;
+
     return IphoneMockupFrame(
       timeText: '08:00',
       activeTab: SpxBottomTab.parcels,
+      onBackTap: onBackTap,
+      onTabSelected: onTabSelected,
       body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,12 +43,12 @@ class ResolutionUpdateScreen extends StatelessWidget {
               stepText: '06 / 06',
             ),
             const SizedBox(height: 6),
-            const Text(
+            const LocalizedText(
               'Resolution Update',
               style: AppTextStyles.pageTitle,
             ),
             const SizedBox(height: 6),
-            const Text(
+            const LocalizedText(
               'Your parcel status has been updated.\n'
               'Updated: 08:00, 03/11/2026 ICT.',
               style: TextStyle(
@@ -59,8 +76,10 @@ class ResolutionUpdateScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // VERIFIED · IN TRANSIT green pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      Flexible(
+                          child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 5),
                         decoration: BoxDecoration(
                           color: AppColors.greenBadgeBg,
                           borderRadius: BorderRadius.circular(20),
@@ -74,7 +93,8 @@ class ResolutionUpdateScreen extends StatelessWidget {
                               color: AppColors.greenIcon,
                             ),
                             SizedBox(width: 5),
-                            Text(
+                            Flexible(
+                                child: LocalizedText(
                               'VERIFIED · IN TRANSIT',
                               style: TextStyle(
                                 fontFamily: AppTextStyles.fontFamily,
@@ -83,18 +103,18 @@ class ResolutionUpdateScreen extends StatelessWidget {
                                 letterSpacing: 0.35,
                                 color: AppColors.greenText,
                               ),
-                            ),
+                            )),
                           ],
                         ),
-                      ),
+                      )),
                       // Delivery Truck outline icon
                       SpxCustomIcons.deliveryTruck(size: 22),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Left the sorting hub',
-                    style: TextStyle(
+                  LocalizedText(
+                    order.resolutionHubStatus,
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: 16.5,
                       fontWeight: FontWeight.w700,
@@ -103,10 +123,10 @@ class ResolutionUpdateScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  LocalizedText(
                     '08:00, 03/11/2026 ICT\n'
-                    'SPXVN-DEMO-261102-0042',
-                    style: TextStyle(
+                    '${order.trackingId}',
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: 11.8,
                       fontWeight: FontWeight.w400,
@@ -119,7 +139,8 @@ class ResolutionUpdateScreen extends StatelessWidget {
                   // Inner Gray Route Box
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
                       color: AppColors.innerGrayCardBg,
                       borderRadius: BorderRadius.circular(11),
@@ -128,23 +149,23 @@ class ResolutionUpdateScreen extends StatelessWidget {
                       children: [
                         SpxCustomIcons.routePath(size: 20),
                         const SizedBox(width: 11),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Sorting Hub – Ho Chi Minh City',
-                                style: TextStyle(
+                              LocalizedText(
+                                order.currentHub,
+                                style: const TextStyle(
                                   fontFamily: AppTextStyles.fontFamily,
                                   fontSize: 12.6,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
-                              SizedBox(height: 2),
-                              Text(
-                                'To Thu Duc City, Ho Chi Minh City',
-                                style: TextStyle(
+                              const SizedBox(height: 2),
+                              LocalizedText(
+                                'To ${order.destination}',
+                                style: const TextStyle(
                                   fontFamily: AppTextStyles.fontFamily,
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w400,
@@ -159,7 +180,7 @@ class ResolutionUpdateScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  const Text(
+                  const LocalizedText(
                     'Est. delivery · Subject to change',
                     style: TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
@@ -169,9 +190,9 @@ class ResolutionUpdateScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 3),
-                  const Text(
-                    '04–05/11/2026',
-                    style: TextStyle(
+                  LocalizedText(
+                    order.estimatedDelivery,
+                    style: const TextStyle(
                       fontFamily: AppTextStyles.fontFamily,
                       fontSize: 15.0,
                       fontWeight: FontWeight.w700,
@@ -193,8 +214,8 @@ class ResolutionUpdateScreen extends StatelessWidget {
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Padding(
+                children: [
+                  const Padding(
                     padding: EdgeInsets.only(top: 1),
                     child: Icon(
                       Icons.check_circle_outline_rounded,
@@ -202,12 +223,12 @@ class ResolutionUpdateScreen extends StatelessWidget {
                       color: AppColors.greenIcon,
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const LocalizedText(
                           'Support Request resolved',
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
@@ -216,13 +237,10 @@ class ResolutionUpdateScreen extends StatelessWidget {
                             color: AppColors.greenText,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Sorting delay resolved. Your parcel is on its\n'
-                          'way to the next facility, not yet delivered.\n'
-                          'Request DR-261102-0482 closed at 08:00,\n'
-                          '03/11/2026 ICT.',
-                          style: TextStyle(
+                        const SizedBox(height: 4),
+                        LocalizedText(
+                          order.resolutionSummary,
+                          style: const TextStyle(
                             fontFamily: AppTextStyles.fontFamily,
                             fontSize: 12.0,
                             fontWeight: FontWeight.w400,
@@ -239,15 +257,17 @@ class ResolutionUpdateScreen extends StatelessWidget {
             const SizedBox(height: 14),
 
             // Back to parcel tracking button
-            const SpxPrimaryButton(
+            SpxPrimaryButton(
               label: 'Back to parcel tracking',
               showArrow: true,
+              onTap: onBackToParcelTracking,
             ),
             const SizedBox(height: 9),
 
             // Contact support again button
-            const SpxSecondaryButton(
+            SpxSecondaryButton(
               label: 'Contact support again',
+              onTap: onContactSupportAgain,
             ),
           ],
         ),
@@ -255,4 +275,3 @@ class ResolutionUpdateScreen extends StatelessWidget {
     );
   }
 }
-

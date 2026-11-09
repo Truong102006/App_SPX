@@ -1,6 +1,12 @@
+import '../../../../core/widgets/spx_interactive.dart';
+import '../../../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/widgets/iphone_mockup_frame.dart';
+import '../../../../data/models/parcel_sample_data.dart';
+import '../../../account/presentation/screens/account_utilities_screen.dart';
+import '../../../account/presentation/screens/demo_vouchers.dart';
 import '../../../parcel_tracking/presentation/screens/delivery_time_updates_screen.dart';
 import '../../../parcel_tracking/presentation/screens/parcel_delayed_screen.dart';
 import '../../../parcel_tracking/presentation/screens/reason_for_delay_screen.dart';
@@ -17,49 +23,185 @@ class ScreenShowcasePage extends StatefulWidget {
 }
 
 class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
-  // -1 means "Show All 7 Screens Side-by-Side", 0..6 means single screen focus
+  // -1 means "Show All 8 Screens Side-by-Side", 0..7 means single screen focus
   int _selectedIndex = -1;
-
-  static const List<_ScreenItem> _screens = [
-    _ScreenItem(
-      title: '1. Parcel Tracking (01/06)',
-      subtitle: 'Your parcel may be delayed',
-      widget: ParcelDelayedScreen(),
-    ),
-    _ScreenItem(
-      title: '2. Reason for Delay (02/06)',
-      subtitle: 'Why is my parcel delayed?',
-      widget: ReasonForDelayScreen(),
-    ),
-    _ScreenItem(
-      title: '3. Delivery Timeframes (03/06)',
-      subtitle: 'Delivery time and status updates',
-      widget: DeliveryTimeUpdatesScreen(),
-    ),
-    _ScreenItem(
-      title: '4. Delayed Support (04/06)',
-      subtitle: 'How can I help you?',
-      widget: DelayedParcelSupportScreen(),
-    ),
-    _ScreenItem(
-      title: '5. Confirm Request Modal',
-      subtitle: 'Submit Support Request?',
-      widget: ConfirmSupportRequestScreen(),
-    ),
-    _ScreenItem(
-      title: '6. Track Request (05/06)',
-      subtitle: 'Track Support Request',
-      widget: TrackSupportRequestScreen(),
-    ),
-    _ScreenItem(
-      title: '7. Resolution Update (06/06)',
-      subtitle: 'Left the sorting hub',
-      widget: ResolutionUpdateScreen(),
-    ),
+  bool _isExpress = false;
+  bool _showVoucherOffer = false;
+  DemoVoucher? _receivedVoucher;
+  final List<DemoVoucher> _vouchers = [
+    DemoVoucher(
+        code: 'DEMO-SHOPEE-10', shopee: true, receivedAt: DateTime.now()),
+    DemoVoucher(
+        code: 'DEMO-SPX-30K', shopee: false, receivedAt: DateTime.now()),
   ];
+
+  void _startSupport(bool express) {
+    setState(() {
+      _isExpress = express;
+      _showVoucherOffer = false;
+      _receivedVoucher = null;
+      _selectedIndex = 5;
+    });
+  }
+
+  void _submitSupport() {
+    setState(() {
+      _selectedIndex = 6;
+      _showVoucherOffer = true;
+      _receivedVoucher = null;
+    });
+  }
+
+  void _claimVoucher(bool shopee) {
+    if (!_showVoucherOffer || _receivedVoucher != null) return;
+    setState(() {
+      final voucher = DemoVoucher(
+          code: 'DEMO-${shopee ? 'SHOPEE' : 'SPX'}-${_vouchers.length + 1}',
+          shopee: shopee,
+          receivedAt: DateTime.now(),
+          trackingId: _selectedOrder.trackingId);
+      _vouchers.add(voucher);
+      _receivedVoucher = voucher;
+    });
+  }
+
+  ParcelOrderData _selectedOrder = ParcelTrackingSampleData.sampleOrders.first;
+
+  void _navigateToScreen(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void _handleBottomTabTap(SpxBottomTab tab) {
+    switch (tab) {
+      case SpxBottomTab.home:
+        return;
+      case SpxBottomTab.account:
+        _navigateToScreen(0); // Account & Utilities (Image 1)
+        break;
+      case SpxBottomTab.parcels:
+        _navigateToScreen(1); // Parcel Tracking (01/06)
+        break;
+      case SpxBottomTab.support:
+        _navigateToScreen(4); // Delayed Support (04/06)
+        break;
+    }
+  }
+
+  List<_ScreenItem> _buildScreens() {
+    return [
+      _ScreenItem(
+        title: '0. Account & Utilities',
+        subtitle: 'Pending Orders & Delayed Support',
+        widget: AccountUtilitiesScreen(
+          vouchers: _vouchers,
+          selectedOrder: _selectedOrder,
+          onOpenParcelTracking: () => _navigateToScreen(1),
+          onOpenSupportCenter: () => _navigateToScreen(4),
+          onSelectOrder: (order) {
+            setState(() {
+              _selectedOrder = order;
+              _selectedIndex = 1;
+            });
+          },
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+      _ScreenItem(
+        title: '1. Parcel Tracking (01/06)',
+        subtitle: 'Your parcel may be delayed',
+        widget: ParcelDelayedScreen(
+          selectedOrder: _selectedOrder,
+          onOrderChanged: (order) {
+            setState(() {
+              _selectedOrder = order;
+            });
+          },
+          onViewDetails: () => _navigateToScreen(2),
+          onBackTap: () => _navigateToScreen(0),
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+      _ScreenItem(
+        title: '2. Reason for Delay (02/06)',
+        subtitle: 'Why is my parcel delayed?',
+        widget: ReasonForDelayScreen(
+          selectedOrder: _selectedOrder,
+          onViewUpdateTime: () => _navigateToScreen(3),
+          onBackTap: () => _navigateToScreen(1),
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+      _ScreenItem(
+        title: '3. Delivery Timeframes (03/06)',
+        subtitle: 'Delivery time and status updates',
+        widget: DeliveryTimeUpdatesScreen(
+          selectedOrder: _selectedOrder,
+          onDelayedParcelSupport: () => _navigateToScreen(4),
+          onReviewParcelDetails: () => _navigateToScreen(2),
+          onBackTap: () => _navigateToScreen(2),
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+      _ScreenItem(
+        title: '4. Delayed Support (04/06)',
+        subtitle: 'How can I help you?',
+        widget: DelayedParcelSupportScreen(
+          selectedOrder: _selectedOrder,
+          onSubmitSupportRequest: () => _startSupport(false),
+          onRequestUrgentSupport: () => _startSupport(true),
+          onViewDetailsAndNextUpdate: () => _navigateToScreen(3),
+          onBackTap: () => _navigateToScreen(3),
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+      _ScreenItem(
+        title: '5. Confirm Request Modal',
+        subtitle: 'Submit Support Request?',
+        widget: ConfirmSupportRequestScreen(
+          isExpress: _isExpress,
+          selectedOrder: _selectedOrder,
+          onConfirmAndSubmit: _submitSupport,
+          onGoBackWithoutSubmitting: () => _navigateToScreen(4),
+        ),
+      ),
+      _ScreenItem(
+        title: '6. Track Request (05/06)',
+        subtitle: 'Track Support Request',
+        widget: TrackSupportRequestScreen(
+          isExpress: _isExpress,
+          voucherOverlay: _showVoucherOffer
+              ? DemoVoucherPanel(
+                  received: _receivedVoucher,
+                  onChoose: _claimVoucher,
+                  onClose: () => setState(() => _showVoucherOffer = false),
+                )
+              : null,
+          selectedOrder: _selectedOrder,
+          onViewResolutionUpdate: () => _navigateToScreen(7),
+          onBackTap: () => _navigateToScreen(4),
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+      _ScreenItem(
+        title: '7. Resolution Update (06/06)',
+        subtitle: 'Left the sorting hub',
+        widget: ResolutionUpdateScreen(
+          selectedOrder: _selectedOrder,
+          onBackToParcelTracking: () => _navigateToScreen(1),
+          onContactSupportAgain: () => _navigateToScreen(4),
+          onBackTap: () => _navigateToScreen(6),
+          onTabSelected: _handleBottomTabTap,
+        ),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screens = _buildScreens();
+
     return Scaffold(
       backgroundColor: const Color(0xFF434446),
       body: Column(
@@ -75,7 +217,7 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
                 children: [
                   Row(
                     children: const [
-                      Text(
+                      LocalizedText(
                         'SPX ',
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
@@ -84,7 +226,7 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
                           color: AppColors.logoOrange,
                         ),
                       ),
-                      Text(
+                      LocalizedText(
                         'Express UI Showcase',
                         style: TextStyle(
                           fontFamily: AppTextStyles.fontFamily,
@@ -97,14 +239,14 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
                   ),
                   const SizedBox(width: 24),
                   _buildFilterChip(
-                    label: 'All 7 Screens (01/06 → 06/06 + Modal)',
+                    label: 'All 8 Screens (Account + 01/06 → 06/06)',
                     selected: _selectedIndex == -1,
                     onTap: () => setState(() => _selectedIndex = -1),
                   ),
                   const SizedBox(width: 8),
-                  for (int i = 0; i < _screens.length; i++) ...[
+                  for (int i = 0; i < screens.length; i++) ...[
                     _buildFilterChip(
-                      label: _screens[i].title,
+                      label: screens[i].title,
                       selected: _selectedIndex == i,
                       onTap: () => setState(() => _selectedIndex = i),
                     ),
@@ -118,8 +260,8 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
           // Main Viewport
           Expanded(
             child: _selectedIndex == -1
-                ? _buildAllScreensCanvas()
-                : _buildSingleScreenCanvas(_screens[_selectedIndex]),
+                ? _buildAllScreensCanvas(screens)
+                : _buildSingleScreenCanvas(screens[_selectedIndex]),
           ),
         ],
       ),
@@ -131,7 +273,7 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return SpxInteractive(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
@@ -144,7 +286,7 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
             width: 1,
           ),
         ),
-        child: Text(
+        child: LocalizedText(
           label,
           style: TextStyle(
             fontFamily: AppTextStyles.fontFamily,
@@ -157,7 +299,7 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
     );
   }
 
-  Widget _buildAllScreensCanvas() {
+  Widget _buildAllScreensCanvas(List<_ScreenItem> screens) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
       child: Center(
@@ -165,13 +307,13 @@ class _ScreenShowcasePageState extends State<ScreenShowcasePage> {
           spacing: 28,
           runSpacing: 32,
           alignment: WrapAlignment.center,
-          children: _screens.map((item) {
+          children: screens.map((item) {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 item.widget,
                 const SizedBox(height: 10),
-                Text(
+                LocalizedText(
                   item.title,
                   style: const TextStyle(
                     fontFamily: AppTextStyles.fontFamily,

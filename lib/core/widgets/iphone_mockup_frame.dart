@@ -1,3 +1,5 @@
+import 'spx_interactive.dart';
+import '../../core/localization/app_language.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
@@ -13,6 +15,9 @@ class IphoneMockupFrame extends StatelessWidget {
   final Widget body;
   final SpxBottomTab? activeTab;
   final bool showStandardShell;
+  final bool showStatusBar;
+  final VoidCallback? onBackTap;
+  final ValueChanged<SpxBottomTab>? onTabSelected;
 
   const IphoneMockupFrame({
     super.key,
@@ -20,6 +25,9 @@ class IphoneMockupFrame extends StatelessWidget {
     required this.body,
     this.activeTab,
     this.showStandardShell = true,
+    this.showStatusBar = false,
+    this.onBackTap,
+    this.onTabSelected,
   });
 
   @override
@@ -54,9 +62,8 @@ class IphoneMockupFrame extends StatelessWidget {
             if (showStandardShell)
               Column(
                 children: [
-                  _IosStatusBar(timeText: timeText),
-                  const _SpxAppBar(),
-                  const _SampleDataBanner(),
+                  SpxIosStatusBar(timeText: timeText),
+                  _SpxAppBar(onBackTap: onBackTap),
                   Expanded(
                     child: Container(
                       width: double.infinity,
@@ -64,7 +71,18 @@ class IphoneMockupFrame extends StatelessWidget {
                       child: body,
                     ),
                   ),
-                  if (activeTab != null) _SpxBottomNavBar(activeTab: activeTab!),
+                  if (activeTab != null)
+                    _SpxBottomNavBar(
+                      activeTab: activeTab!,
+                      onTabSelected: onTabSelected,
+                    ),
+                ],
+              )
+            else if (showStatusBar)
+              Column(
+                children: [
+                  SpxIosStatusBar(timeText: timeText),
+                  Expanded(child: body),
                 ],
               )
             else
@@ -128,29 +146,35 @@ class _IphoneNotch extends StatelessWidget {
   }
 }
 
-class _IosStatusBar extends StatelessWidget {
+class SpxIosStatusBar extends StatelessWidget {
   final String timeText;
+  final Color foregroundColor;
+  final Color backgroundColor;
 
-  const _IosStatusBar({required this.timeText});
+  const SpxIosStatusBar(
+      {super.key,
+      required this.timeText,
+      this.foregroundColor = Colors.black,
+      this.backgroundColor = Colors.white});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 44,
-      color: Colors.white,
+      color: backgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 26),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(
+            child: LocalizedText(
               timeText,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppTextStyles.fontFamily,
                 fontSize: 14.5,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: foregroundColor,
                 letterSpacing: -0.2,
               ),
             ),
@@ -173,10 +197,10 @@ class _IosStatusBar extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(width: 6),
-                const Icon(
+                Icon(
                   Icons.wifi_rounded,
                   size: 15.5,
-                  color: Colors.black,
+                  color: foregroundColor,
                 ),
                 const SizedBox(width: 6),
                 // Battery icon
@@ -189,13 +213,13 @@ class _IosStatusBar extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(3),
                         border: Border.all(
-                          color: Colors.black.withValues(alpha: 0.45),
+                          color: foregroundColor.withValues(alpha: 0.45),
                           width: 1,
                         ),
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.black,
+                          color: foregroundColor,
                           borderRadius: BorderRadius.circular(1.2),
                         ),
                       ),
@@ -205,7 +229,7 @@ class _IosStatusBar extends StatelessWidget {
                       width: 1.5,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
+                        color: foregroundColor.withValues(alpha: 0.45),
                         borderRadius: const BorderRadius.only(
                           topRight: Radius.circular(1),
                           bottomRight: Radius.circular(1),
@@ -227,7 +251,8 @@ class _IosStatusBar extends StatelessWidget {
       width: 2.7,
       height: height,
       decoration: BoxDecoration(
-        color: active ? Colors.black : Colors.black.withValues(alpha: 0.28),
+        color:
+            active ? foregroundColor : foregroundColor.withValues(alpha: 0.28),
         borderRadius: BorderRadius.circular(1),
       ),
     );
@@ -235,7 +260,9 @@ class _IosStatusBar extends StatelessWidget {
 }
 
 class _SpxAppBar extends StatelessWidget {
-  const _SpxAppBar();
+  final VoidCallback? onBackTap;
+
+  const _SpxAppBar({this.onBackTap});
 
   @override
   Widget build(BuildContext context) {
@@ -246,10 +273,17 @@ class _SpxAppBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Icon(
-            Icons.arrow_back_rounded,
-            size: 20,
-            color: AppColors.textPrimary,
+          SpxInteractive(
+            onTap: onBackTap,
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.all(4.0),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ),
           RichText(
             text: const TextSpan(
@@ -277,10 +311,25 @@ class _SpxAppBar extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(
-            Icons.more_horiz_rounded,
-            size: 21,
-            color: AppColors.textPrimary,
+          SpxInteractive(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: LocalizedText('SPX Express'),
+                  duration: Duration(seconds: 1),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.all(4.0),
+              child: Icon(
+                Icons.more_horiz_rounded,
+                size: 21,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -288,28 +337,14 @@ class _SpxAppBar extends StatelessWidget {
   }
 }
 
-class _SampleDataBanner extends StatelessWidget {
-  const _SampleDataBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 27,
-      color: AppColors.bannerBg,
-      alignment: Alignment.center,
-      child: const Text(
-        'STUDENT PROJECT · SAMPLE DATA · UNOFFICIAL',
-        style: AppTextStyles.bannerLabel,
-      ),
-    );
-  }
-}
-
 class _SpxBottomNavBar extends StatelessWidget {
   final SpxBottomTab activeTab;
+  final ValueChanged<SpxBottomTab>? onTabSelected;
 
-  const _SpxBottomNavBar({required this.activeTab});
+  const _SpxBottomNavBar({
+    required this.activeTab,
+    this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -324,23 +359,31 @@ class _SpxBottomNavBar extends StatelessWidget {
             children: [
               _buildItem(
                 label: 'Home',
+                tab: SpxBottomTab.home,
                 isActive: activeTab == SpxBottomTab.home,
-                iconBuilder: (color) => SpxCustomIcons.homeIcon(size: 21, color: color),
+                iconBuilder: (color) =>
+                    SpxCustomIcons.homeIcon(size: 21, color: color),
               ),
               _buildItem(
                 label: 'Parcels',
+                tab: SpxBottomTab.parcels,
                 isActive: activeTab == SpxBottomTab.parcels,
-                iconBuilder: (color) => SpxCustomIcons.parcelSearch(size: 22, color: color),
+                iconBuilder: (color) =>
+                    SpxCustomIcons.parcelSearch(size: 22, color: color),
               ),
               _buildItem(
                 label: 'Support',
+                tab: SpxBottomTab.support,
                 isActive: activeTab == SpxBottomTab.support,
-                iconBuilder: (color) => SpxCustomIcons.supportHeadset(size: 21, color: color),
+                iconBuilder: (color) =>
+                    SpxCustomIcons.supportHeadset(size: 21, color: color),
               ),
               _buildItem(
                 label: 'Account',
+                tab: SpxBottomTab.account,
                 isActive: activeTab == SpxBottomTab.account,
-                iconBuilder: (color) => SpxCustomIcons.accountIcon(size: 21, color: color),
+                iconBuilder: (color) =>
+                    SpxCustomIcons.accountIcon(size: 21, color: color),
               ),
             ],
           ),
@@ -361,29 +404,35 @@ class _SpxBottomNavBar extends StatelessWidget {
 
   Widget _buildItem({
     required String label,
+    required SpxBottomTab tab,
     required bool isActive,
     required Widget Function(Color color) iconBuilder,
   }) {
     final color = isActive ? AppColors.primaryOrange : AppColors.navInactive;
-    return SizedBox(
-      width: 72,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          iconBuilder(color),
-          const SizedBox(height: 3.5),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontSize: 10.5,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              color: color,
+    return SpxInteractive(
+      onTap: tab != SpxBottomTab.home && onTabSelected != null
+          ? () => onTabSelected!(tab)
+          : null,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 72,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            iconBuilder(color),
+            const SizedBox(height: 3.5),
+            LocalizedText(
+              label,
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 10.5,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
